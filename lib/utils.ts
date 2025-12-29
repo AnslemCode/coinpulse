@@ -72,7 +72,7 @@ export function timeAgo(date: string | number | Date): string {
 export function convertOHLCData(data: OHLCData[]) {
   return data
     .map((d) => ({
-      time: d[0] as Time, // ensure seconds, not ms
+      time: d[0] as Time,
       open: d[1],
       high: d[2],
       low: d[3],

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import DataTable from "@/components/DataTable";
 
 export const CoinOverviewFallback = () => {
@@ -51,8 +50,8 @@ export const TrendingCoinsFallback = () => {
       <h4>Trending Coins</h4>
       <DataTable
         data={dummyData}
-        columns={columns as any}
-        rowKey={(item: any) => item.id}
+        columns={columns}
+        rowKey={(item) => item.id}
         tableClassName="trending-coins-table"
       />
     </div>
@@ -106,8 +105,8 @@ export const CategoriesFallback = () => {
       <h4>Top Categories</h4>
       <DataTable
         data={dummyData}
-        columns={columns as any}
-        rowKey={(item: any) => item.id}
+        columns={columns}
+        rowKey={(item) => item.id}
         tableClassName="mt-3"
       />
     </div>

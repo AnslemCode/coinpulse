@@ -16,7 +16,7 @@ export async function fetcher<T>(
 ): Promise<T> {
   const url = queryString.stringifyUrl(
     {
-      url: `${BASE_URL}/${endpoint}`,
+      url: `${BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`,
       query: params,
     },
     { skipEmptyString: true, skipNull: true }
