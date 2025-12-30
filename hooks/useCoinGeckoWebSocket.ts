@@ -26,16 +26,25 @@ export const useCoinGeckoWebSocket = ({
       ws.send(JSON.stringify(payload));
 
     const handleMessage = (event: MessageEvent) => {
-      const msg: WebSocketMessage = JSON.parse(event.data);
+      let msg: WebSocketMessage;
+      try {
+        msg = JSON.parse(event.data);
+      } catch {
+        console.error("Failed to parse WebSocket message:", event.data);
+        return;
+      }
 
       if (msg.type === "ping") {
         send({ type: "pong" });
         return;
       }
       if (msg.type === "confirm_subscription") {
-        const { channel } = JSON.parse(msg?.identifier ?? "");
-
-        subscribed.current.add(channel);
+        try {
+          const { channel } = JSON.parse(msg?.identifier ?? "{}");
+          subscribed.current.add(channel);
+        } catch {
+          console.error("Failed to parse subscription identifier");
+        }
       }
       if (msg.c === "C1") {
         setPrice({
@@ -80,7 +89,7 @@ export const useCoinGeckoWebSocket = ({
 
     ws.onclose = () => setIsWsReady(false);
 
-    ws.onerror = (error) => {
+    ws.onerror = () => {
       setIsWsReady(false);
     };
 
@@ -130,7 +139,7 @@ export const useCoinGeckoWebSocket = ({
       subscribe("CGSimplePrice", { coin_id: [coinId], action: "set_tokens" });
     });
 
-    const poolAddress = poolId.replace("_", ":") ?? "";
+    const poolAddress = poolId?.replaceAll("_", ":") ?? "";
 
     if (poolAddress) {
       subscribe("OnchainTrade", {

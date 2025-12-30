@@ -24,7 +24,7 @@ const Page = async ({ params }: NextPageProps) => {
   const platform = coinData.asset_platform_id
     ? coinData.detail_platforms?.[coinData.asset_platform_id]
     : null;
-  const network = platform?.geckoterminal_url.split("/")[3] || null;
+  const network = platform?.geckoterminal_url?.split("/")[3] || null;
   const contractAddress = platform?.contract_address || null;
 
   const pool = await getPools(id, network, contractAddress);
@@ -69,7 +69,7 @@ const Page = async ({ params }: NextPageProps) => {
           coinId={id}
           poolId={pool.id}
           coin={coinData}
-          coinOHLCData={coinOHLCData}
+          coinOHLCData={[coinOHLCData]}
         >
           <h4>Exchange Listings</h4>
         </LiveDataWrapper>
@@ -92,7 +92,7 @@ const Page = async ({ params }: NextPageProps) => {
 
                 {link ? (
                   <div className="link">
-                    <Link href={link} target="_blank">
+                    <Link href={link} target="_blank" rel="noopener noreferrer">
                       {linkText || label}
                     </Link>
                     <ArrowUpRight size={16} />
