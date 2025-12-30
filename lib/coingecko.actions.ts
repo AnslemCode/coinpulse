@@ -107,3 +107,89 @@ export async function getPools(
     return fallback;
   }
 }
+
+export async function searchCoins(
+  query: string,
+  limit: number = 10
+): Promise<SearchCoin[]> {
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
+  try {
+    const searchResults = await fetcher<{
+      coins: Array<{
+        id: string;
+        name: string;
+        symbol: string;
+        market_cap_rank: number | null;
+        thumb: string;
+        large: string;
+      }>;
+    }>("/search", { query }, 30);
+
+    if (!searchResults.coins || searchResults.coins.length === 0) {
+      return [];
+    }
+    const topCoins = searchResults.coins.slice(0, limit);
+    const coinIds = topCoins.map((coin) => coin.id);
+
+    if (coinIds.length === 0) {
+      return [];
+    }
+
+    const marketData = await fetcher<CoinMarketData[]>(
+      "/coins/markets",
+      {
+        ids: coinIds.join(","),
+        vs_currency: "usd",
+        order: "market_cap_desc",
+        per_page: limit,
+        page: 1,
+        sparkline: false,
+        price_change_percentage: "24h",
+      },
+      60
+    );
+
+    const marketDataMap = new Map<string, CoinMarketData>();
+    marketData.forEach((coin) => {
+      marketDataMap.set(coin.id, coin);
+    });
+
+    const enrichedCoins: SearchCoin[] = topCoins.map((searchCoin) => {
+      const market = marketDataMap.get(searchCoin.id);
+
+      return {
+        id: searchCoin.id,
+        name: searchCoin.name,
+        symbol: searchCoin.symbol,
+        market_cap_rank: searchCoin.market_cap_rank,
+        thumb: searchCoin.thumb,
+        large: searchCoin.large,
+        data: {
+          price: market?.current_price,
+          price_change_percentage_24h: market?.price_change_percentage_24h ?? 0,
+        },
+      };
+    });
+
+    return enrichedCoins;
+  } catch (error) {
+    console.error("Error searching coins:", error);
+    return [];
+  }
+}
+
+export async function getTrendingCoins(): Promise<TrendingCoin[]> {
+  try {
+    const response = await fetcher<{
+      coins: TrendingCoin[];
+    }>("/search/trending", undefined, 300);
+
+    return response.coins || [];
+  } catch (error) {
+    console.error("Error fetching trending coins:", error);
+    return [];
+  }
+}
